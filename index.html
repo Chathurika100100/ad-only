@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title></title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  background: #f5f5f5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+}
+.ad-box {
+  width: 100%;
+  max-width: 728px;
+  margin-bottom: 12px;
+  aspect-ratio: 728 / 90;
+  position: relative;
+  overflow: hidden;
+}
+.ad-box iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 728px;
+  height: 90px;
+  border: none;
+  transform-origin: top left;
+}
+</style>
+</head>
+<body>
+<script>
+(function() {
+  const adHtml = '<script>atOptions={' +
+    '"key":"67600fbcbe8185fb4188ec1b5917ffe6",' +
+    '"format":"iframe",' +
+    '"height":90,' +
+    '"width":728,' +
+    '"params":{}' +
+    '};<\/script>' +
+    '<script src="https://www.highperformanceformat.com/67600fbcbe8185fb4188ec1b5917ffe6/invoke.js"><\/script>';
+
+  function createAds() {
+    for (let i = 0; i < 50; i++) {
+      const box = document.createElement('div');
+      box.className = 'ad-box';
+
+      const iframe = document.createElement('iframe');
+      iframe.scrolling = 'no';
+
+      box.appendChild(iframe);
+      document.body.appendChild(box);
+
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(adHtml);
+      doc.close();
+    }
+    scaleAds();
+  }
+
+  function scaleAds() {
+    const scale = Math.min(1, (window.innerWidth - 20) / 728);
+    document.querySelectorAll('.ad-box iframe').forEach(function(iframe) {
+      iframe.style.transform = 'scale(' + scale + ')';
+    });
+  }
+
+  createAds();
+  window.addEventListener('resize', scaleAds);
+})();
+</script>
+</body>
+</html>
