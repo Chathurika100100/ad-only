@@ -3,81 +3,125 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title></title>
+<title>-</title>
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-body {
-  background: #f5f5f5;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-}
-.ad-box {
-  width: 100%;
-  max-width: 728px;
-  margin-bottom: 12px;
-  aspect-ratio: 728 / 90;
-  position: relative;
-  overflow: hidden;
-}
-.ad-box iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 728px;
-  height: 90px;
-  border: none;
-  transform-origin: top left;
-}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; background: #000; overflow-x: hidden; }
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    grid-auto-rows: 50px;
+    grid-auto-flow: dense;
+    gap: 4px;
+    width: 100%;
+    min-height: 100vh;
+    padding: 4px;
+  }
+  .ad-box {
+    background: #000;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+  .ad-box iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+  .s2x1 { grid-column: span 2; grid-row: span 1; }
+  .s2x6 { grid-column: span 2; grid-row: span 6; }
+  .s2x12 { grid-column: span 2; grid-row: span 12; }
+  .s4x1 { grid-column: span 4; grid-row: span 1; }
+  .s4x5 { grid-column: span 4; grid-row: span 5; }
+  .s6x2 { grid-column: span 6; grid-row: span 2; }
+  .s10x2 { grid-column: span 10; grid-row: span 2; }
+
+  @media (max-width: 768px) {
+    #grid {
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 50px;
+      gap: 3px;
+      padding: 3px;
+    }
+    .s10x2 { grid-column: span 4; grid-row: span 2; }
+    .s6x2 { grid-column: span 4; grid-row: span 1; }
+    .s4x5 { grid-column: span 4; grid-row: span 5; }
+    .s4x1 { grid-column: span 4; grid-row: span 1; }
+    .s2x6 { grid-column: span 2; grid-row: span 6; }
+    .s2x12 { grid-column: span 2; grid-row: span 12; }
+  }
+</style>
+</head>
+<body>
+<div id="grid"></div>
+<script>
+  const ads = [
+    { key: '85fbe78cd6346770ab32db9188f81cd1', w: 468, h: 60, cls: 's6x2' },
+    { key: 'a1d67d305eea1d7e76ac9b16464dc76d', w: 300, h: 250, cls: 's4x5' },
+    { key: 'f06b5ffa80caae3ad3ff6435e374f1e8', w: 160, h: 300, cls: 's2x6' },
+    { key: '0796ebcd627d22e6afe40b5a188f0120', w: 160, h: 600, cls: 's2x12' },
+    { key: '285e91b62044664e68014af90292aadb', w: 320, h: 50, cls: 's4x1' },
+    { key: 'e1b0139f6a3392cf1adadcc056b725c9', w: 728, h: 90, cls: 's10x2' }
+  ];
+
+  function makeAd(config, index) {
+    const div = document.createElement('div');
+    div.className = 'ad-box ' + config.cls;
+    const iframe = document.createElement('iframe');
+    iframe.loading = index < 24 ? 'eager' : 'lazy';
+    iframe.title = '-';
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden;}
+iframe{width:100%!important;height:100%!important;border:none!important;display:block;}
 </style>
 </head>
 <body>
 <script>
-(function() {
-  const adHtml = '<script>atOptions={' +
-    '"key":"67600fbcbe8185fb4188ec1b5917ffe6",' +
-    '"format":"iframe",' +
-    '"height":90,' +
-    '"width":728,' +
-    '"params":{}' +
-    '};<\/script>' +
-    '<script src="https://www.highperformanceformat.com/67600fbcbe8185fb4188ec1b5917ffe6/invoke.js"><\/script>';
+atOptions = {
+  'key' : '${config.key}',
+  'format' : 'iframe',
+  'height' : ${config.h},
+  'width' : ${config.w},
+  'params' : {}
+};
+<\/script>
+<script src="https://www.highperformanceformat.com/${config.key}/invoke.js"><\/script>
+</body>
+</html>`;
+    iframe.srcdoc = html;
+    div.appendChild(iframe);
+    return div;
+  }
 
-  function createAds() {
-    for (let i = 0; i < 50; i++) {
-      const box = document.createElement('div');
-      box.className = 'ad-box';
+  const grid = document.getElementById('grid');
+  let adCount = 0;
 
-      const iframe = document.createElement('iframe');
-      iframe.scrolling = 'no';
-
-      box.appendChild(iframe);
-      document.body.appendChild(box);
-
-      const doc = iframe.contentDocument || iframe.contentWindow.document;
-      doc.open();
-      doc.write(adHtml);
-      doc.close();
+  function addAds(count) {
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+      const cfg = ads[Math.floor(Math.random() * ads.length)];
+      fragment.appendChild(makeAd(cfg, adCount++));
     }
-    scaleAds();
+    grid.appendChild(fragment);
   }
 
-  function scaleAds() {
-    const scale = Math.min(1, (window.innerWidth - 20) / 728);
-    document.querySelectorAll('.ad-box iframe').forEach(function(iframe) {
-      iframe.style.transform = 'scale(' + scale + ')';
-    });
-  }
+  addAds(60);
 
-  createAds();
-  window.addEventListener('resize', scaleAds);
-})();
+  let loading = false;
+  window.addEventListener('scroll', () => {
+    if (loading) return;
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1200) {
+      loading = true;
+      addAds(30);
+      setTimeout(() => { loading = false; }, 400);
+    }
+  });
 </script>
 </body>
 </html>
